@@ -1,34 +1,43 @@
-name: Release
+name: Build and Release
 
 on:
   push:
     tags:
-      - 'v*.*.*'  # Triggers on version tags like v0.1.0, v1.0.0, etc.
+      - 'v*.*.*'
 
 jobs:
   release:
-    name: Create GitHub Release
+    name: Release Cross-Platform Binaries
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: x86_64-pc-windows-gnu
+            os: windows-latest
+          - target: x86_64-apple-darwin
+            os: macos-latest
+
     steps:
-      - name: Checkout repository
+      - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Set up Rust
+      - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
+          target: ${{ matrix.target }}
 
       - name: Build binary
-        run: cargo build --release
+        run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Create GitHub Release
+      - name: Upload release asset
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
           files: |
-            target/release/torch_poetry_bootstrap
+            target/${{ matrix.target }}/release/torch_poetry_bootstrap${{ matrix.target == 'x86_64-pc-windows-gnu' && '.exe' || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
