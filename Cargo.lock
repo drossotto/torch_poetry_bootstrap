@@ -306,7 +306,7 @@ checksum = "b679217f2848de74cabd3e8fc5e6d66f40b7da40f8e1954d92054d9010690fd5"
 
 [[package]]
 name = "torch_poetry_bootstrap"
-version = "0.1.12"
+version = "0.1.13"
 dependencies = [
  "clap",
  "once_cell",
