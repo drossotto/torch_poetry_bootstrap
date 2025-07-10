@@ -39,5 +39,18 @@ If you don’t want to install Rust, you can download a standalone binary from t
 ## Example Usage
 
 ```bash
-cargo run -- --print-toml
+torch_poetry_bootstrap \
+  --patch-pyproject examples/pyproject.toml \
+  --output examples/patched.toml
 
+🔍 Running `nvidia-smi` to detect CUDA version...
+✅ Detected CUDA version: 12.3
+
+📄 Loading torch source mapping from JSON...
+✅ Selected best matching torch source:
+🔗 Source: cu121
+🌐 URL: https://download.pytorch.org/whl/cu121
+
+✅ Successfully patched `pyproject.toml` with the new source: examples/patched.toml
+
+```
