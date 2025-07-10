@@ -4,6 +4,28 @@ A simple command-line utility that detects your system's NVIDIA CUDA version and
 
 ---
 
+## Installation
+If you have Rust installed, the CLI can be installed via cargo, like so:
+
+```bash
+cargo install torch_poetry_bootstrap
+```
+
+### 📦 Option 2: Download a Precompiled Binary
+
+If you don’t want to install Rust, you can download a standalone binary from the [GitHub Releases](https://github.com/drossotto/torch_poetry_bootstrap/releases):
+
+1. Visit the [Releases page](https://github.com/drossotto/torch_poetry_bootstrap/releases).
+2. Download the binary appropriate for your system:
+   - **Windows**: `torch_poetry_bootstrap.exe`
+   - **Linux**: `torch_poetry_bootstrap`
+   - **macOS**: `torch_poetry_bootstrap`
+3. (Linux/macOS only) Make the binary executable:
+
+   ```bash
+   chmod +x torch_poetry_bootstrap
+
+
 ## Features
 
 - Detects local CUDA version via `nvidia-smi`
@@ -18,3 +40,4 @@ A simple command-line utility that detects your system's NVIDIA CUDA version and
 
 ```bash
 cargo run -- --print-toml
+
