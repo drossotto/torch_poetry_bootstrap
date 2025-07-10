@@ -1,5 +1,6 @@
 use std::fs::OpenOptions;
 use std::io::Write;
+use std::path::Path;
 use std::process::Command;
 
 use clap::Parser;
@@ -12,7 +13,14 @@ mod logs;
 use logs::*;
 
 mod tomlgen;
-use tomlgen::generate_poetry_source_toml;
+use tomlgen::{
+    generate_poetry_source_toml,
+    patch_pyproject,
+    patch_pyproject_to_output,
+};
+
+mod errors;
+use errors::BootstrapError;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about)]
@@ -22,6 +30,12 @@ struct Args {
 
     #[arg(long)]
     print_toml: bool,
+
+    #[arg(long, value_name = "PATCH_PYPROJECT", default_missing_value = "pyproject.toml", num_args = 0..=1)]
+    patch_pyproject: Option<String>,
+
+    #[arg(long)]
+    output: Option<String>,
 
     #[arg(long)]
     log: Option<String>,
@@ -54,31 +68,47 @@ fn detect_cuda_version() -> Option<String> {
     Some(captures[1].to_string())
 }
 
-fn main() {
+fn main() -> Result<(), BootstrapError> {
     let args = Args::parse();
     let log = make_logger(args.log.clone());
 
     log(START_DETECTION);
 
-    match detect_cuda_version() {
-        Some(ver) => {
-            log(&format!("✅ Detected CUDA version: {}", ver));
+    let ver = detect_cuda_version().ok_or("CUDA version not found")?;
+    log(&format!("✅ Detected CUDA version: {}", ver));
 
-            log(LOADING_SOURCE_JSON);
-            let sources = load_sources("data/cuda_torch_sources.json");
+    log(LOADING_SOURCE_JSON);
+    let sources = load_sources("data/cuda_torch_sources.json");
 
-            let selected = resolve_best_source(&ver, &sources);
-            log(SOURCE_SELECTED);
-            log(&format!("{SELECTED_SOURCE_NAME} {}", selected.source));
-            log(&format!("{SELECTED_SOURCE_URL} {}", selected.url));
-            
-            if args.print_toml {
-                let toml = generate_poetry_source_toml(&selected);
-                log(&format!("{PRINTED_TOML}\n{}", toml));
+    let selected = resolve_best_source(&ver, &sources);
+    log(SOURCE_SELECTED);
+    log(&format!("{SELECTED_SOURCE_NAME} {}", selected.source));
+    log(&format!("{SELECTED_SOURCE_URL} {}", selected.url));
+
+    if args.print_toml {
+        let toml = generate_poetry_source_toml(&selected);
+        log(&format!("{PRINTED_TOML}\n{}", toml));
+    }
+
+    if let Some(ref input_path) = args.patch_pyproject {
+        let input = Path::new(input_path);
+        let result = if let Some(ref out_path) = args.output {
+            patch_pyproject_to_output(input, Path::new(out_path), &selected)
+        } else {
+            patch_pyproject(input, &selected)
+        };
+
+        match result {
+            Ok(_) => {
+                if let Some(out_path) = &args.output {
+                    log(&format!("{}: {}", SUC_PATCH_PYPROJECT, out_path));
+                } else {
+                    log(SUC_PATCH_PYPROJECT);
+                }
             }
+            Err(e) => return Err(BootstrapError::from(e.to_string().as_str())),
         }
-        None => {
-            log(CUDA_NOT_FOUND);
-        }
-    } 
+    }
+
+    Ok(())
 }

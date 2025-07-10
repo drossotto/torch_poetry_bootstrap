@@ -3,6 +3,7 @@
 pub const START_DETECTION: &str =
     "🔍 Running `nvidia-smi` to detect CUDA version...";
 
+#[allow(dead_code)]
 pub const CUDA_NOT_FOUND: &str =
     "❌ Could not detect CUDA version from `nvidia-smi` output.";
 
@@ -23,3 +24,6 @@ pub const SELECTED_SOURCE_URL: &str =
 
 pub const PRINTED_TOML: &str = 
     "📦 TOML snippet for Poetry:";
+
+pub const SUC_PATCH_PYPROJECT: &str =
+    "✅ Successfully patched `pyproject.toml` with the new source.";
