@@ -1,13 +1,22 @@
+// src/main.rs
+
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::Path;
-use std::process::Command;
 
 use clap::Parser;
-use regex::Regex;
+
+mod gpu_detection;
+use gpu_detection::{
+    detect_with_nvidia_smi,
+    fallback_detect_cuda_version,
+};
 
 mod resolver;
-use resolver::{load_sources, resolve_best_source};
+use resolver::{
+    load_sources,
+    resolve_best_source,
+};
 
 mod logs;
 use logs::*;
@@ -56,25 +65,25 @@ fn make_logger(log_path: Option<String>) -> impl Fn(&str) {
     }
 }
 
-/// Runs `nvidia-smi` and extracts the CUDA version (e.g., "12.3")
-fn detect_cuda_version() -> Option<String> {
-    let output = Command::new("nvidia-smi")
-        .output()
-        .expect(FAILED_NVIDIA_SMI_RUN);
-
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let re = Regex::new(r"CUDA Version: (\d+\.\d+)").ok()?;
-    let captures = re.captures(&stdout)?;
-    Some(captures[1].to_string())
-}
-
 fn main() -> Result<(), BootstrapError> {
     let args = Args::parse();
     let log = make_logger(args.log.clone());
 
     log(START_DETECTION);
 
-    let ver = detect_cuda_version().ok_or("CUDA version not found")?;
+    let ver = match detect_with_nvidia_smi() {
+        Ok(v) => v,
+        Err(e) => {
+            log(&format!("❌ {}", e));
+            if let Some(fallback_ver) = fallback_detect_cuda_version() {
+                log(&format!("Using fallback CUDA version: {}", fallback_ver));
+                fallback_ver
+            } else {
+                return Err(BootstrapError::from("Failed to detect CUDA version"));
+            }
+        }
+    };
+
     log(&format!("✅ Detected CUDA version: {}", ver));
 
     log(LOADING_SOURCE_JSON);
