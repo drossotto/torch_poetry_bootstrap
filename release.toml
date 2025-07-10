@@ -4,4 +4,6 @@ push = true
 publish = false
 tag-name = "v{{version}}"
 consolidate-commits = true
+
+[release]
 pre-release-commit-message = "chore: prepare release {{version}}"
