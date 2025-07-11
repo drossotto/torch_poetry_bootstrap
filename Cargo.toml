@@ -1,6 +1,6 @@
 [package]
 name = "torch_poetry_bootstrap"
-version = "0.1.17"
+version = "0.1.18"
 edition = "2024"
 authors = ["Davide Rossotto <drossotto@crimson.ua.edu>"]
 description = "A command-line tool to detect CUDA version and install the appropriate PyTorch wheel via Poetry."

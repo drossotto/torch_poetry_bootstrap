@@ -1,7 +1,8 @@
 // src/resolver.rs
 
 use serde::{Deserialize};
-use std::fs;
+
+use crate::errors::BootstrapError;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct TorchSource {
@@ -23,11 +24,13 @@ fn parse_version(v: &str) -> Option<(u32, u32)> {
     }
 }
 
-pub fn load_sources(json_path: &str) -> Vec<TorchSource> {
-    let json = fs::read_to_string(json_path)
-        .expect("Failed to read cuda_torch_sources.json");
-    serde_json::from_str(&json)
-        .expect("Failed to parse cuda_torch_sources.json")
+pub fn load_sources_from_str(json_str: &str) -> Result<Vec<TorchSource>, BootstrapError> {
+    serde_json::from_str(json_str).map_err(|e| {
+        BootstrapError::from(format!(
+            "Failed to parse embedded cuda_torch_sources.json: {}",
+            e
+        ))
+    })
 }
 
 pub fn resolve_best_source(detected_version: &str, sources: &[TorchSource]) -> TorchSource {

@@ -15,7 +15,7 @@ use gpu_detection::{
 
 mod resolver;
 use resolver::{
-    load_sources,
+    load_sources_from_str,
     resolve_best_source,
 };
 
@@ -92,7 +92,11 @@ fn main() -> Result<(), BootstrapError> {
     log(&format!("✅ Detected CUDA version: {}", ver));
 
     log(LOADING_SOURCE_JSON);
-    let sources = load_sources("data/cuda_torch_sources.json");
+    let data = include_str!("../data/cuda_torch_sources.json");
+    let sources = match load_sources_from_str(data) {
+        Ok(s) => s,
+        Err(e) => return Err(e),
+    };
 
     let selected = resolve_best_source(&ver, &sources);
     log(SOURCE_SELECTED);
