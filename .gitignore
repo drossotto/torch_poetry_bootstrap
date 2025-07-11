@@ -2,4 +2,6 @@
 
 Makefile
 
+examples/patched.toml
+examples/pyproject.toml
 examples/

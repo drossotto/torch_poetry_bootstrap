@@ -43,14 +43,15 @@ torch_poetry_bootstrap \
   --patch-pyproject examples/pyproject.toml \
   --output examples/patched.toml
 
+torch_poetry_bootstrap v0.1.15
 🔍 Running `nvidia-smi` to detect CUDA version...
 ✅ Detected CUDA version: 12.3
-
 📄 Loading torch source mapping from JSON...
 ✅ Selected best matching torch source:
 🔗 Source: cu121
 🌐 URL: https://download.pytorch.org/whl/cu121
-
-✅ Successfully patched `pyproject.toml` with the new source: examples/patched.toml
+Source 'cu121' with URL 'https://download.pytorch.org/whl/cu121' already exists in the pyproject.toml.
+✅ Successfully patched `pyproject.toml` with the new source.: examples/patched.toml
+Completed in 1.71s
 
 ```

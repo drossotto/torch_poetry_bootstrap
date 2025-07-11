@@ -3,6 +3,7 @@
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::Path;
+use std::time::Instant;
 
 use clap::Parser;
 
@@ -69,6 +70,9 @@ fn main() -> Result<(), BootstrapError> {
     let args = Args::parse();
     let log = make_logger(args.log.clone());
 
+    let start: Instant = Instant::now();
+    log(format!("torch_poetry_bootstrap v{}", env!("CARGO_PKG_VERSION")).as_str());
+
     log(START_DETECTION);
 
     let ver = match detect_with_nvidia_smi() {
@@ -79,7 +83,8 @@ fn main() -> Result<(), BootstrapError> {
                 log(&format!("Using fallback CUDA version: {}", fallback_ver));
                 fallback_ver
             } else {
-                return Err(BootstrapError::from("Failed to detect CUDA version"));
+                log("Falling back to CPU installation (no cpu detected). ");
+                "cpu".to_string()
             }
         }
     };
@@ -118,6 +123,9 @@ fn main() -> Result<(), BootstrapError> {
             Err(e) => return Err(BootstrapError::from(e.to_string().as_str())),
         }
     }
+
+    let elapsed = start.elapsed();
+    log(&format!("Completed in {:.2?}", elapsed));
 
     Ok(())
 }
